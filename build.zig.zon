@@ -1,0 +1,10 @@
+.{
+    .name = .simp,
+    .version = "0.0.0",
+    .fingerprint = 0x9f9e44179cd96bb3,
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
