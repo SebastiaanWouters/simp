@@ -6,6 +6,7 @@ MAX_ITERATIONS=10
 PROMPT=""
 FINISH=""
 CONFIG_FILE=""
+USE_SANDBOX=false
 
 show_help() {
     cat << 'EOF'
@@ -18,6 +19,7 @@ Options:
     --finish <condition>   The condition to check for completion
     --max-iteration <n>    Maximum iterations (default: 10)
     --file <path>          YAML config file with prompt/finish/max-iterations
+    --sandbox              Use docker sandbox instead of --dangerously-skip-permissions
     --help, -h             Show this help message
 
 Example:
@@ -46,6 +48,10 @@ while [[ $# -gt 0 ]]; do
         --file)
             CONFIG_FILE="$2"
             shift 2
+            ;;
+        --sandbox)
+            USE_SANDBOX=true
+            shift
             ;;
         *)
             echo "Unknown option: $1"
@@ -82,16 +88,22 @@ fi
 ESCAPED_PROMPT=$(printf '%q' "$PROMPT")
 ESCAPED_FINISH=$(printf '%q' "$FINISH")
 
+if [[ "$USE_SANDBOX" == true ]]; then
+    CLAUDE_CMD="docker sandbox run claude"
+else
+    CLAUDE_CMD="claude --dangerously-skip-permissions"
+fi
+
 for ((i=1; i<=MAX_ITERATIONS; i++)); do
     echo "=== Iteration $i/$MAX_ITERATIONS ==="
     
     echo "Running prompt..."
-    docker sandbox run claude --print "$PROMPT"
+    $CLAUDE_CMD --print "$PROMPT"
     
     echo "Checking finish condition..."
     CHECK_PROMPT="Check if the following condition is satisfied: ${FINISH}. If, and only if, the condition is satisfied, output ONLY <promise>COMPLETED</promise>. Otherwise, output ONLY <promise>PENDING</promise>."
     
-    OUTPUT=$(docker sandbox run claude --print "$CHECK_PROMPT")
+    OUTPUT=$($CLAUDE_CMD --print "$CHECK_PROMPT")
     
     if echo "$OUTPUT" | grep -q '<promise>COMPLETED</promise>'; then
         echo "=== COMPLETED at iteration $i ==="
