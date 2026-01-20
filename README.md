@@ -5,13 +5,13 @@ A simple iterative prompt runner for Claude sandbox.
 ## Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SebastiaanWouters/simp/main/install.sh | bash
+curl -fsSL https://cdn.jsdelivr.net/gh/SebastiaanWouters/simp@main/install.sh | bash
 ```
 
 Or with sudo for system-wide installation:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SebastiaanWouters/simp/main/install.sh | sudo bash
+curl -fsSL https://cdn.jsdelivr.net/gh/SebastiaanWouters/simp@main/install.sh | sudo bash
 ```
 
 ## Usage

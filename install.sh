@@ -37,7 +37,7 @@ get_install_dir() {
 }
 
 INSTALL_DIR=$(get_install_dir)
-REPO_URL="https://raw.githubusercontent.com/SebastiaanWouters/simp/main/simp.sh"
+REPO_URL="https://cdn.jsdelivr.net/gh/SebastiaanWouters/simp@main/simp.sh"
 BIN_NAME="simp"
 
 main() {
@@ -52,9 +52,9 @@ main() {
     # Download simp.sh
     print_message info "Downloading simp..."
     if command -v curl &>/dev/null; then
-        curl -fsSL "$REPO_URL" -o "$INSTALL_DIR/$BIN_NAME"
+        curl -fsSL -H 'Cache-Control: no-cache' "$REPO_URL" -o "$INSTALL_DIR/$BIN_NAME"
     elif command -v wget &>/dev/null; then
-        wget -qO "$INSTALL_DIR/$BIN_NAME" "$REPO_URL"
+        wget -qO "$INSTALL_DIR/$BIN_NAME" --no-cache "$REPO_URL"
     else
         print_message error "Neither curl nor wget found. Please install one and try again."
         exit 1
