@@ -1,2 +1,19 @@
-.zig-cache/
-zig-out/
+# Binaries
+simp
+*.exe
+
+# Go
+go.sum
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
