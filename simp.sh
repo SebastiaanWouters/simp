@@ -102,6 +102,10 @@ if [[ -n "$CONFIG_FILE" ]]; then
     [[ -n "$FILE_MAX_ITERATIONS" ]] && MAX_ITERATIONS="$FILE_MAX_ITERATIONS"
 fi
 
+if [[ -z "$MAX_ITERATIONS" || ! "$MAX_ITERATIONS" =~ ^[0-9]+$ ]]; then
+    MAX_ITERATIONS=10
+fi
+
 if [[ -z "$PROMPT" ]]; then
     echo "Error: --prompt is required"
     exit 1
