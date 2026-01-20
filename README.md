@@ -31,19 +31,28 @@ simp --prompt "Your task" --finish "Completion condition"
 
 ### Config File
 
-Create a config file with:
+Create a YAML config file:
 
-```
-prompt: Your task here
-finish: Condition that must be satisfied
-max-iterations: 10
+```yaml
+prompt: |
+  1. Run `tk ready` to find the next ticket
+  2. Run `tk start <id>` to mark it in progress
+  3. Implement the ticket
+  4. Run tests to verify
+  5. Run `tk close <id>` when done
+
+finish: tk ready shows no tickets
+
+max-iterations: 20
 ```
 
 Then run:
 
 ```bash
-simp --file config.txt
+simp --file config.yaml
 ```
+
+The agent loops until the finish condition is met or max iterations reached.
 
 ## License
 
