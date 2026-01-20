@@ -115,6 +115,27 @@ fi
 ESCAPED_PROMPT=$(printf '%q' "$PROMPT")
 ESCAPED_FINISH=$(printf '%q' "$FINISH")
 
+run_claude_with_retry() {
+    local max_retries=3
+    local delay=2
+    local attempt=1
+    local output
+    
+    while ((attempt <= max_retries)); do
+        if output=$($CLAUDE_CMD --print "$@" 2>&1); then
+            printf '%s' "$output"
+            return 0
+        fi
+        echo "Attempt $attempt failed, retrying in ${delay}s..." >&2
+        sleep "$delay"
+        delay=$((delay * 2))
+        ((attempt++))
+    done
+    
+    echo "Error: All $max_retries attempts failed" >&2
+    return 1
+}
+
 if [[ "$USE_SANDBOX" == true ]]; then
     CLAUDE_CMD="docker sandbox run claude"
 else
@@ -125,12 +146,18 @@ for ((i=1; i<=MAX_ITERATIONS; i++)); do
     echo "=== Iteration $i/$MAX_ITERATIONS ==="
     
     echo "Running prompt..."
-    $CLAUDE_CMD --print "$PROMPT"
+    if ! run_claude_with_retry "$PROMPT"; then
+        echo "Warning: Prompt execution failed, skipping to next iteration..."
+        continue
+    fi
     
     echo "Checking finish condition..."
     CHECK_PROMPT="Check if the following condition is satisfied: ${FINISH}. If, and only if, the condition is satisfied, output ONLY <promise>COMPLETED</promise>. Otherwise, output ONLY <promise>PENDING</promise>."
     
-    OUTPUT=$($CLAUDE_CMD --print "$CHECK_PROMPT")
+    if ! OUTPUT=$(run_claude_with_retry "$CHECK_PROMPT"); then
+        echo "Warning: Finish check failed, assuming PENDING..."
+        continue
+    fi
     
     if echo "$OUTPUT" | grep -q '<promise>COMPLETED</promise>'; then
         echo "=== COMPLETED at iteration $i ==="
