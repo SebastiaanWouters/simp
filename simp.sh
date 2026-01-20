@@ -7,8 +7,30 @@ PROMPT=""
 FINISH=""
 CONFIG_FILE=""
 
+show_help() {
+    cat << 'EOF'
+simp - Simple iterative prompt runner
+
+Usage: simp [OPTIONS]
+
+Options:
+    --prompt <text>        The prompt to run each iteration
+    --finish <condition>   The condition to check for completion
+    --max-iteration <n>    Maximum iterations (default: 10)
+    --file <path>          YAML config file with prompt/finish/max-iterations
+    --help, -h             Show this help message
+
+Example:
+    simp --prompt "Fix the failing tests" --finish "All tests pass"
+EOF
+    exit 0
+}
+
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --help|-h)
+            show_help
+            ;;
         --max-iteration)
             MAX_ITERATIONS="$2"
             shift 2
