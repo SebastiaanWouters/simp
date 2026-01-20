@@ -60,15 +60,42 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+parse_yaml_value() {
+    local file="$1"
+    local key="$2"
+    local line_num value_part result=""
+    
+    line_num=$(grep -n "^${key}:" "$file" | head -1 | cut -d: -f1)
+    [[ -z "$line_num" ]] && return
+    
+    value_part=$(sed -n "${line_num}p" "$file" | sed "s/^${key}:[[:space:]]*//")
+    
+    if [[ "$value_part" == "|" || "$value_part" == "|-" || "$value_part" == "|+" ]]; then
+        local next_line=$((line_num + 1))
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^[[:space:]]+ ]]; then
+                [[ -n "$result" ]] && result+=$'\n'
+                result+="${line#  }"
+            else
+                break
+            fi
+        done < <(tail -n "+$next_line" "$file")
+    else
+        result="$value_part"
+    fi
+    
+    printf '%s' "$result"
+}
+
 if [[ -n "$CONFIG_FILE" ]]; then
     if [[ ! -f "$CONFIG_FILE" ]]; then
         echo "Error: Config file not found: $CONFIG_FILE"
         exit 1
     fi
     
-    FILE_PROMPT=$(grep -E '^prompt:' "$CONFIG_FILE" | sed 's/^prompt:[[:space:]]*//')
-    FILE_FINISH=$(grep -E '^finish:' "$CONFIG_FILE" | sed 's/^finish:[[:space:]]*//')
-    FILE_MAX_ITERATIONS=$(grep -E '^max-iterations:' "$CONFIG_FILE" | sed 's/^max-iterations:[[:space:]]*//')
+    FILE_PROMPT=$(parse_yaml_value "$CONFIG_FILE" "prompt")
+    FILE_FINISH=$(parse_yaml_value "$CONFIG_FILE" "finish")
+    FILE_MAX_ITERATIONS=$(parse_yaml_value "$CONFIG_FILE" "max-iterations")
     
     [[ -z "$PROMPT" && -n "$FILE_PROMPT" ]] && PROMPT="$FILE_PROMPT"
     [[ -z "$FINISH" && -n "$FILE_FINISH" ]] && FINISH="$FILE_FINISH"
